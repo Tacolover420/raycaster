@@ -4,7 +4,6 @@
   "description": "",
   "main": "index.js",
   "author": "John Senneker",
-  "license": "BSD",
   "devDependencies": {
     "babelify": "~7.2.0",
     "grunt-browserify": "~4.0.1",
