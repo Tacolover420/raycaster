@@ -15558,6 +15558,10 @@ var Game = exports.Game = function () {
 
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
+
+    this.buffer = document.createElement('canvas');
+    this.bufferCtx = this.buffer.getContext('2d');
+
     this.rows = rows;
     this.cols = cols;
 
@@ -15609,6 +15613,10 @@ var Game = exports.Game = function () {
 
       this.canvas.width = 1024;
       this.canvas.height = 512;
+
+      this.buffer.width = 1024;
+      this.buffer.height = 512;
+
       window.document.body.style.margin = 0;
 
       window.addEventListener('keydown', function (e) {
@@ -15672,9 +15680,10 @@ var Game = exports.Game = function () {
     value: function render() {
       var blockSize, mapW, mapH, w, h, r0, c0, r, c;
 
-      this.ctx.fillStyle = 'rgb(127, 127, 127)';
-      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+      this.bufferCtx.fillStyle = 'rgb(127, 127, 127)';
+      this.bufferCtx.fillRect(0, 0, this.canvas.width, this.canvas.height);
       this.cast();
+      this.ctx.drawImage(this.buffer, 0, 0);
 
       blockSize = 3;
       mapW = blockSize * this.cols;
@@ -15705,13 +15714,14 @@ var Game = exports.Game = function () {
     key: 'cast',
     value: function cast() {
       var rayDir, gridPos, gridDistX, gridDistY, distNextGridX, distNextGridY, stepX, stepY, side, wallDist, lineHeight, lineStart, lineEnd;
-      var canvas = this.canvas;
+
+      var buffer = this.buffer;
       var pos = this.pos;
       var dir = this.dir;
       var plane = this.plane;
 
-      for (var x = 0; x < canvas.width; ++x) {
-        rayDir = dir.plus(plane.scaledBy(2 * x / canvas.width - 1));
+      for (var x = 0; x < buffer.width; ++x) {
+        rayDir = dir.plus(plane.scaledBy(2 * x / buffer.width - 1));
         /* `--> Note: the scaling factor is always in [-1, 1]. */
 
         gridPos = pos.map(Math.floor);
@@ -15774,17 +15784,17 @@ var Game = exports.Game = function () {
         }
 
         /* Calculate how high this strip of the wall should appear (in pixels). */
-        lineHeight = Math.abs(Math.floor(canvas.height / wallDist));
+        lineHeight = Math.abs(Math.floor(buffer.height / wallDist));
 
-        lineStart = Math.max((canvas.height - lineHeight) / 2, 0);
-        lineEnd = Math.min((lineHeight + canvas.height) / 2, canvas.height - 1);
+        lineStart = Math.max((buffer.height - lineHeight) / 2, 0);
+        lineEnd = Math.min((lineHeight + buffer.height) / 2, buffer.height - 1);
 
         /* Draw the line */
-        this.ctx.beginPath();
-        this.ctx.moveTo(x, lineStart);
-        this.ctx.lineTo(x, lineEnd);
-        this.ctx.strokeStyle = side === 'X' ? this.wallColourX : this.wallColourY;
-        this.ctx.stroke();
+        this.bufferCtx.beginPath();
+        this.bufferCtx.moveTo(x, lineStart);
+        this.bufferCtx.lineTo(x, lineEnd);
+        this.bufferCtx.strokeStyle = side === 'X' ? this.wallColourX : this.wallColourY;
+        this.bufferCtx.stroke();
       }
     }
   }]);
